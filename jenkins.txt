@@ -1,0 +1,339 @@
+########################################################################################################
+
+############
+BUILD JOB - Init
+############
+
+ls -l
+
+HOME_DIR="<directory>"
+LOCATION="<location>"
+FOLDER="<folder>>"
+
+JENKINS_WORKSPACE="/var/lib/jenkins/workspace"
+BUILD_JOB="<build_job_name>"
+
+IMAGE_ID=<Name>
+IMAGE_TAG=<tag>
+CONTAINER="<Name>"
+port=<port>
+
+tar="<file>.tar"
+
+cd $HOME_DIR
+pwd
+
+if [ -d $LOCATION ]
+then
+    echo "File LOCATION already exists"
+    ls -l
+else
+    echo "Creating FOLDER........"
+    sudo mkdir $LOCATION
+    ls -l
+fi
+
+cd $LOCATION
+pwd
+
+directory="$HOME_DIR/$LOCATION/$FOLDER/"
+if [ -d $directory ]
+then
+	echo "Directory exists, Removing......"
+    ls -l
+    sudo rm -Rf $HOME_DIR/$LOCATION/$FOLDER/
+    ls -l
+    
+    echo "Now create directory......."
+    sudo mkdir $HOME_DIR/$LOCATION/$FOLDER/
+    ls -l
+else
+	echo "Creating directory......"
+    ls
+	sudo mkdir $HOME_DIR/$LOCATION/$FOLDER/
+    ls -l
+fi
+
+sudo mv $JENKINS_WORKSPACE/$BUILD_JOB $HOME_DIR/$LOCATION/$FOLDER
+
+cd $HOME_DIR/$LOCATION/$FOLDER/$BUILD_JOB
+
+ls -l
+sudo docker images
+
+sudo docker image inspect "${IMAGE_ID}:${IMAGE_TAG}" >/dev/null 2>&1 && SUCCESS=yes || SUCCESS=no
+echo $SUCCESS
+
+if [ $SUCCESS = yes ]
+then
+	echo "Image already exists. Removing existing image..... Please wait" && sudo docker rmi -f "${IMAGE_ID}:${IMAGE_TAG}"
+    sudo docker images
+else
+	echo "No Image Found with such name. Processing new image creation..... Please wait"
+    sudo docker images
+fi
+
+sudo docker build -t "${IMAGE_ID}:${IMAGE_TAG}" .
+
+sudo docker images
+
+sudo mv $HOME_DIR/$LOCATION/$FOLDER/* $JENKINS_WORKSPACE/
+sudo docker save -o $JENKINS_WORKSPACE/$BUILD_JOB/$tar ${IMAGE_ID}:${IMAGE_TAG}
+
+cd $JENKINS_WORKSPACE/$BUILD_JOB/
+ls -l
+pwd
+
+FILE=$JENKINS_WORKSPACE/$BUILD_JOB/$tar
+
+if test -f $FILE;then
+	echo "File available"
+    ls -l
+    #sudo cp $JENKINS_WORKSPACE/$BUILD_JOB/$tar $JENKINS_WORKSPACE/$BUILD_JOB/
+	#echo "Copy Successful"
+    pwd
+else
+	echo "File Not Available or Has not been created yet"
+    pwd
+    ls -l
+fi
+
+#cd $JENKINS_WORKSPACE/$BUILD_JOB/
+pwd
+sudo chown jenkins $tar
+
+echo "File is ready to Publish Over SSH to the next server"
+
+############
+BUILD JOB - SSH
+############
+
+pwd
+ls -a
+IMAGE_ID=<image_id>
+IMAGE_TAG=<tag>
+CONTAINER="<cont_name>"
+port=<port>
+tar="<file>.tar"
+
+sudo docker container inspect "${CONTAINER}" >/dev/null 2>&1 && EXISTS=yes || EXISTS=no
+echo $EXISTS
+
+if [ $EXISTS = yes ]
+then
+    echo "container already exists. Removing existing container..... Please wait" && sudo docker stop "${CONTAINER}" && sudo docker rm "${CONTAINER}"
+    sudo docker ps -a
+    sudo docker image inspect "${IMAGE_ID}:${IMAGE_TAG}" >/dev/null 2>&1 && SUCCESS=yes || SUCCESS=no
+    echo $SUCCESS
+
+    if [ $SUCCESS = yes ]
+    then
+	    echo "Image already exists. Removing existing image..... Please wait" && sudo docker images && sudo docker rmi -f "${IMAGE_ID}:${IMAGE_TAG}"
+        echo "Loading Docker Image from Tar File" && sudo docker load -i $tar
+    else
+	    echo "No Images Found with such name. Processing new image creation..... Please wait" && sudo docker images
+        echo "Loading Docker Image from Tar File" && sudo docker load -i $tar
+    fi
+    echo "Creating Docker container. Please wait......."
+    #sudo docker run --log-driver syslog --log-opt syslog-address=tcp://127.0.<tag>:514 -d --name "${CONTAINER}" -p $port:3000 -v ~/logs:/usr/src/app/logs "${IMAGE_ID}:${IMAGE_TAG}" && sudo docker ps -a
+    sudo docker run -d --name "${CONTAINER}" -p $port:3000 -v ~/logs:/usr/src/app/logs "${IMAGE_ID}:${IMAGE_TAG}" && sudo docker ps -a
+else
+    echo "No Containers Found with such name. Processing new Container creation..... Please wait"
+    sudo docker image inspect "${IMAGE_ID}:${IMAGE_TAG}" >/dev/null 2>&1 && SUCCESS=yes || SUCCESS=no
+    echo $SUCCESS
+
+    if [ $SUCCESS = yes ]
+    then
+	    echo "Image already exists. Removing existing image..... Please wait" && sudo docker images && sudo docker rmi -f "${IMAGE_ID}:${IMAGE_TAG}"
+        echo "Loading Docker Image from Tar File" && sudo docker load -i $tar
+    else
+	    echo "No Images Found with such name. Processing new image creation..... Please wait" && sudo docker images
+        echo "Loading Docker Image from Tar File" && sudo docker load -i $tar
+    fi
+    echo "Creating Docker container. Please wait......."
+    #sudo docker run --log-driver syslog --log-opt syslog-address=tcp://127.0.<tag>:514 -d --name "${CONTAINER}" -p $port:3000  -v ~/logs:/usr/src/app/logs "${IMAGE_ID}:${IMAGE_TAG}" && sudo docker ps -a
+    sudo docker run -d --name "${CONTAINER}" -p $port:3000 -v ~/logs:/usr/src/app/logs "${IMAGE_ID}:${IMAGE_TAG}" && sudo docker ps -a
+fi
+echo "Thank You for Your Patience, Your Deployment is Successfully Done. Regards - Kinnar Chowdhury"
+
+
+########################################################################################################
+########################################################################################################
+########################################################################################################
+########################################################################################################
+
+
+
+# Build JOB
+
+ls -l
+
+HOME_DIR="/home/ubuntu"
+LOCATION="<name>"
+FOLDER="<name>_backend"
+
+JENKINS_WORKSPACE="/var/lib/jenkins/workspace"
+BUILD_JOB="<build_job_name>"
+
+IMAGE_ID=<name>
+IMAGE_TAG=<tag>
+
+cd $HOME_DIR
+
+if [ -d $LOCATION ]
+then
+    echo "File LOCATION already exists"
+else
+    echo "Creating FOLDER........"
+    sudo mkdir $LOCATION
+fi
+
+cd $LOCATION
+pwd
+
+directory="$HOME_DIR/$LOCATION/$FOLDER/"
+if [ -d $directory ]
+then
+	echo "Directory exists, Removing......"
+    sudo rm -Rf $HOME_DIR/$LOCATION/$FOLDER/
+    
+    echo "Now create directory......."
+    sudo mkdir $HOME_DIR/$LOCATION/$FOLDER/
+else
+	echo "Creating directory......"
+	sudo mkdir $HOME_DIR/$LOCATION/$FOLDER/
+fi
+
+sudo mv $JENKINS_WORKSPACE/$BUILD_JOB $HOME_DIR/$LOCATION/$FOLDER
+
+cd $HOME_DIR/$LOCATION/$FOLDER/$BUILD_JOB
+
+ls -l
+sudo docker images
+
+sudo docker image inspect "${IMAGE_ID}:${IMAGE_TAG}" >/dev/null 2>&1 && SUCCESS=yes || SUCCESS=no
+echo $SUCCESS
+
+if [ $SUCCESS = yes ]
+then
+	echo "Image already exists. Removing existing image..... Please wait" && sudo docker rmi -f "${IMAGE_ID}:${IMAGE_TAG}"
+else
+	echo "No Image Found with such name. Processing new image creation..... Please wait"
+fi
+
+sudo docker build -t "${IMAGE_ID}:${IMAGE_TAG}" .
+
+
+######################################################################################
+######################################################################################
+######################################################################################
+######################################################################################
+
+# Image Compression
+
+ls -l
+ 
+HOME_DIR="<directory>"
+LOCATION="<name>"
+FOLDER="<name>"
+
+JENKINS_WORKSPACE="/var/lib/jenkins/workspace"
+BUILD_JOB="<build_job_name>"
+
+IMAGE_ID=<name>
+IMAGE_TAG=<tag>
+ 
+tar="<filename>.tar"
+ 
+sudo mv $HOME_DIR/$LOCATION/$FOLDER/* $JENKINS_WORKSPACE/
+sudo docker save -o $JENKINS_WORKSPACE/$BUILD_JOB/$tar ${IMAGE_ID}:${IMAGE_TAG}
+
+
+######################################################################################
+######################################################################################
+######################################################################################
+######################################################################################
+
+# Service Deployment
+
+ls -l
+
+JENKINS_WORKSPACE="/var/lib/jenkins/workspace"
+BUILD_JOB="<build_job_name>"
+WORKSPACE="<service_build_job_workspace>"
+
+tar="<filename>.tar"
+
+cd $JENKINS_WORKSPACE/$BUILD_JOB/
+ls -l
+
+FILE=$JENKINS_WORKSPACE/$BUILD_JOB/$tar
+
+if test -f $FILE;then
+	echo "File available"
+    sudo cp $JENKINS_WORKSPACE/$BUILD_JOB/$tar $JENKINS_WORKSPACE/$WORKSPACE/
+	echo "Copy Successful"
+	ls -l
+else
+	echo "File Not Available or Has not been created yet"
+fi
+cd $JENKINS_WORKSPACE/$WORKSPACE/
+
+sudo chown jenkins $tar
+
+echo "File is ready to Publish Over SSH to the next server"
+
+####################################################################################
+####################################################################################
+#! Publish Over SSH
+####################################################################################
+####################################################################################
+
+pwd
+ls -a
+CONTAINER="<name>"
+IMAGE_ID=<name>
+IMAGE_TAG=<tag>
+tar="<filename>.tar"
+port=<port>
+projectport=<port>
+
+sudo docker container inspect "${CONTAINER}" >/dev/null 2>&1 && EXISTS=yes || EXISTS=no
+echo $EXISTS
+
+if [ $EXISTS = yes ]
+then
+    echo "container already exists. Removing existing container..... Please wait" && sudo docker stop "${CONTAINER}" && sudo docker rm "${CONTAINER}"
+    sudo docker ps -a
+    sudo docker image inspect "${IMAGE_ID}:${IMAGE_TAG}" >/dev/null 2>&1 && SUCCESS=yes || SUCCESS=no
+    echo $SUCCESS
+    if [ $SUCCESS = yes ]
+    then
+	    echo "Image already exists. Removing existing image..... Please wait" && sudo docker images && sudo docker rmi -f "${IMAGE_ID}:${IMAGE_TAG}"
+        echo "Loading Docker Image from Tar File" && sudo docker load -i $tar
+    else
+	    echo "No Images Found with such name. Processing new image creation..... Please wait" && sudo docker images
+        echo "Loading Docker Image from Tar File" && sudo docker load -i $tar
+    fi
+    echo "Creating Docker container. Please wait......."
+    sudo docker run -d --name "${CONTAINER}" -p $port:$projectport "${IMAGE_ID}:${IMAGE_TAG}" && sudo docker ps -a
+else
+    echo "No Containers Found with such name. Processing new Container creation..... Please wait"
+    sudo docker image inspect "${IMAGE_ID}:${IMAGE_TAG}" >/dev/null 2>&1 && SUCCESS=yes || SUCCESS=no
+    echo $SUCCESS
+
+    if [ $SUCCESS = yes ]
+    then
+	    echo "Image already exists. Removing existing image..... Please wait" && sudo docker images && sudo docker rmi -f "${IMAGE_ID}:${IMAGE_TAG}"
+        echo "Loading Docker Image from Tar File" && sudo docker load -i $tar
+    else
+	    echo "No Images Found with such name. Processing new image creation..... Please wait" && sudo docker images
+        echo "Loading Docker Image from Tar File" && sudo docker load -i $tar
+    fi
+    echo "Creating Docker container. Please wait......."
+    sudo docker run -d --name "${CONTAINER}" -p $port:$projectport "${IMAGE_ID}:${IMAGE_TAG}" && sudo docker ps -a
+fi
+echo "Thank You for Your Patience, Your Deployment is Successfully Done. Regards - Kinnar Chowdhury."
+
+
+########################################################################################################

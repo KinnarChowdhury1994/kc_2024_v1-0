@@ -4,6 +4,17 @@ FROM python
 #RUN apt-get update
 #RUN apt-get install -y python3-dev default-libmysqlclient-dev libreoffice
 
+# AWS CLI Implementation
+# RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+# RUN apt install unzip
+# RUN unzip awscliv2.zip
+# RUN ./aws/install
+
+# RUN aws configure set aws_access_key_id <access_key>
+# RUN aws configure set aws_secret_access_key <secret_key>
+# RUN aws configure set default.region <region>
+
+
 ARG PROJECT=kc
 ARG PROJECT_DIR=/shared/kc/
 
@@ -19,6 +30,9 @@ ADD . $PROJECT_DIR
 
 # Django App
 ENTRYPOINT [ "python3", "manage.py" ]
+# CMD [ "makemigrations" ]
+# CMD [ "migrate"]
+HEALTHCHECK CMD curl --fail http://localhost:8000|| exit 1
 CMD [ "runserver", "0.0.0.0:8000" ]
 
 # Flask App
