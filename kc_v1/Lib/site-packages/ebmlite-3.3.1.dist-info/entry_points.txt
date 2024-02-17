@@ -1,0 +1,5 @@
+[console_scripts]
+ebml2xml = ebmlite.tools.ebml2xml:main
+list-schemata = ebmlite.tools.list_schemata:main
+view-ebml = ebmlite.tools.view_ebml:main
+xml2ebml = ebmlite.tools.xml2ebml:main
