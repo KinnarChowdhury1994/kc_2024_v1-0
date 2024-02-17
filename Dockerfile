@@ -15,7 +15,7 @@ FROM python
 # RUN aws configure set default.region <region>
 
 
-ARG PROJECT=kc
+ARG PROJECT=project_kc
 ARG PROJECT_DIR=/shared/kc/
 
 WORKDIR $PROJECT_DIR
