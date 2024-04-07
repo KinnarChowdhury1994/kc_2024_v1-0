@@ -1,3 +1,9 @@
+# User Specified Custom Ignores
+kc_v1
+kc_v1/*
+*.log
+*.pyc
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
